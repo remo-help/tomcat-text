@@ -150,7 +150,7 @@ class Extractor(
     (all_events, doc)
   }
 
-  def extractMentions(file_name: String): ArrayBuffer[String] = {
+  def extractMentions(file_name: String, experiment_id: String = "NULL"): ArrayBuffer[String] = {
     val output_array = new ArrayBuffer[String]()
     val transcript = new Transcript(file_name)
     val raw_text = transcript.getCleanDoc
@@ -165,7 +165,7 @@ class Extractor(
     doc = extracted_doc
     extractions.foreach(event_array => all_events.append(event_array))
 
-    val experiment_id = "NULL"; val trial_id = "NULL"
+    val trial_id = "NULL"
     val time_format = new SimpleDateFormat("HH:mm:ss.SSS")
     var text: String = ""; var startOffset = 0; var endOffset = 0
     for (extraction <- all_events) {

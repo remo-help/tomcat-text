@@ -1,6 +1,6 @@
 package org.clulab.asist
 
-import java.io.{File, PrintWriter}
+import java.io.{File, FileNotFoundException, IOException, PrintWriter}
 import java.util.Properties
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP
@@ -46,7 +46,11 @@ object ExtractDirSearch extends App {
     )
   }
 
-  val output_file = new PrintWriter(new File("output_events.txt"))
+  val experiment_id = if (args.length > 1) {
+    args(1)
+  } else {
+    "NULL"
+  }
 
   //https://alvinalexander.com/scala/how-to-list-subdirectories-under-directory-in-scala/
   def getFilesInDir(dir: File): Array[String] = {
@@ -56,16 +60,22 @@ object ExtractDirSearch extends App {
       .filter(_.endsWith(".vtt"))
   }
 
-  try {
-    println("Starting in: " + input_dir_name)
-    for (input_file_name <- getFilesInDir(new File(input_dir_name))) {
-      println("Extracting from: " + input_file_name + " . . .")
-      val extracted_mention_json = extractor.extractMentions(input_file_name)
+  println("Starting in: " + input_dir_name)
+  var output_file_name = ""
+  for (input_file_name <- getFilesInDir(new File(input_dir_name))) {
+    println("Extracting from: " + input_file_name + " . . .")
+    output_file_name = input_file_name.substring(0, input_file_name.size-4) + "_extractions.txt"
+    val output_file = new PrintWriter(new File(output_file_name))
+    val extracted_mention_json = extractor.extractMentions(input_file_name, experiment_id)
+    try {
       for (event_json <- extracted_mention_json) {
         output_file.write(event_json + "\n")
       }
+    } catch {
+      case e: FileNotFoundException => println("Failed to create new file for extracted events")
+      case e: IOException => println("IOException occurred when creating file: "+output_file_name)
+    } finally {
+      output_file.close
     }
-  } finally {
-    output_file.close()
   }
 }
