@@ -2,15 +2,13 @@ package org.clulab.asist
 
 import java.io.{File, FileNotFoundException, IOException, PrintWriter}
 import java.util.Properties
-
 import edu.stanford.nlp.pipeline.StanfordCoreNLP
 import org.clulab.odin.Mention
-import spray.json.DefaultJsonProtocol._
-import spray.json._
 
 import scala.collection.immutable
 import scala.io.Source
-import scala.util.parsing.json.JSON
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 object ExtractDirSearch extends App {
 
@@ -25,11 +23,14 @@ object ExtractDirSearch extends App {
   val pipeline = new StanfordCoreNLP(corenlp_properties)
   println("[CoreNLP] Completed Initialization")
 
-  val taxonomy_json = JsonParser(
+  val taxonomy_json = parse(
     Source.fromResource("taxonomy_map.json").mkString
   )
-  val tax_map = taxonomy_json
-    .convertTo[immutable.Map[String, Array[immutable.Map[String, String]]]]
+  implicit val formats = DefaultFormats
+  case class Pair(term: String, score: String)
+  case class TermMap(term: String, pairs: List[Pair])
+  case class TaxonomyMap(terms: List[TermMap])
+  val tax_map = taxonomy_json.extract[TaxonomyMap]
 
   println("[AsistEngine] Initializing the AsistEngine ...")
   val ieSystem = new AsistEngine()
@@ -52,6 +53,14 @@ object ExtractDirSearch extends App {
     "NULL"
   }
 
+  var output_filename = if (args.length > 2) {
+    args(2)
+  } else {
+    "output_events.txt"
+  }
+
+  var output_file = new PrintWriter(new File(output_filename))
+
   //https://alvinalexander.com/scala/how-to-list-subdirectories-under-directory-in-scala/
   def getFilesInDir(dir: File): Array[String] = {
     dir.listFiles
@@ -60,21 +69,17 @@ object ExtractDirSearch extends App {
       .filter(_.endsWith(".vtt"))
   }
 
-  println("Starting in: " + input_dir_name)
-  var output_file_name = ""
-  for (input_file_name <- getFilesInDir(new File(input_dir_name))) {
-    println("Extracting from: " + input_file_name + " . . .")
-    output_file_name = input_file_name.substring(0, input_file_name.size-4) + "_extractions.txt"
-    val output_file = new PrintWriter(new File(output_file_name))
-    val extracted_mention_json = extractor.extractMentions(input_file_name, experiment_id)
-    try {
+  try {
+    println("Starting in: " + input_dir_name)
+    for (input_file_name <- getFilesInDir(new File(input_dir_name))) {
+      val extension_index = input_file_name.lastIndexOf(".")
+      output_file = new PrintWriter(new File(input_file_name.substring(0, extension_index) + ".out"))
+      println("Extracting from: " + input_file_name + " . . .")
+      val extracted_mention_json =
+        extractor.extractMentions(input_file_name, experiment_id, raw_file=input_file_name.endsWith(".txt"))
       for (event_json <- extracted_mention_json) {
         output_file.write(event_json + "\n")
       }
-    } catch {
-      case e: FileNotFoundException => println("Failed to create new file for extracted events")
-      case e: IOException => println("IOException occurred when creating file: "+output_file_name)
-    } finally {
       output_file.close
     }
   }

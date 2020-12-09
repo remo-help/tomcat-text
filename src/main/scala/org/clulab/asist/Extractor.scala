@@ -1,12 +1,14 @@
 package org.clulab.asist
 
 import java.text.SimpleDateFormat
-
+import java.util.Date
 import edu.stanford.nlp.coref.CorefCoreAnnotations
 import edu.stanford.nlp.coref.data.CorefChain
 import edu.stanford.nlp.pipeline.{Annotation, StanfordCoreNLP}
+import org.clulab.asist.ExtractDirSearch.TaxonomyMap
 import org.clulab.odin.{EventMention, Mention, TextBoundMention}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.JsonDSL._
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -18,7 +20,7 @@ import scala.util.parsing.json.JSON
 class Extractor(
     processor: StanfordCoreNLP,
     ieEngine: AsistEngine,
-    tax_map: immutable.Map[String, Array[immutable.Map[String, String]]]
+    tax_map: TaxonomyMap
 ) {
   val use_coref_resolution = false
   val event_pair_file_name = "event_pairs.tsv"
@@ -150,14 +152,34 @@ class Extractor(
     (all_events, doc)
   }
 
-  def extractMentions(file_name: String, experiment_id: String = "NULL"): ArrayBuffer[String] = {
-    val output_array = new ArrayBuffer[String]()
-    val transcript = new Transcript(file_name)
-    val raw_text = transcript.getCleanDoc
-    val time_lists = transcript.getTimeMap
+  def getTaxonomyMap(term: String, map: TaxonomyMap): List[(String, String)] ={
+    val term_map = map.terms
+    var i = 0
+    while(term_map(i).term != term){
+        i += 1
+    }
+    term_map(i).pairs.map(x => x.term -> x.score)
+  }
 
-    ieEngine.timeintervals = (time_lists._1, time_lists._3, time_lists._4)
-    ieEngine.reload()
+  def extractMentions(
+      file_name: String,
+      experiment_id: String = "NULL",
+      raw_file: Boolean = false
+  ): ArrayBuffer[String] = {
+    val output_array = new ArrayBuffer[String]()
+    var raw_text = ""
+    var time_lists = (new ArrayBuffer[Int], new ArrayBuffer[Date], new ArrayBuffer[Int], new ArrayBuffer[Int])
+    if (!raw_file){
+      val transcript = new Transcript(file_name)
+      raw_text = transcript.getCleanDoc
+      time_lists = transcript.getTimeMap
+      ieEngine.timeintervals = (time_lists._1, time_lists._3, time_lists._4)
+      ieEngine.reload()
+    } else {
+      // Stanford Processors library will run out of memory if sentences don't end
+      // so we replace new lines with periods. Seems like their lib should do that.
+      raw_text = Source.fromFile(file_name).mkString.replace("\n", ".")
+    }
 
     var doc: org.clulab.processors.Document = null
     val all_events = new ArrayBuffer[Array[Any]]
@@ -183,51 +205,38 @@ class Extractor(
           startOffset = cur.startOffset
           endOffset = cur.endOffset
       }
-      val timestamp = getTimeStamp(time_lists._1, time_lists._2, startOffset)
-      var taxonomy_matches = "{\n"
-      var count = 0
-      for (term <- tax_map(mention.label)) {
-        taxonomy_matches = taxonomy_matches + s"""|         \"${term(
-          "term"
-        )}\": \"${term("score")}\""""
-        count += 1
-        if (count != tax_map(mention.label).size) {
-          taxonomy_matches = taxonomy_matches + ",\n"
-        } else {
-          taxonomy_matches = taxonomy_matches + "\n"
-        }
+      var time_string = ""
+      if (!raw_file){
+        val timestamp = getTimeStamp(time_lists._1, time_lists._2, startOffset)
+        time_string = time_format.format(timestamp)
+      } else {
+        time_string = "NULL"
       }
-      taxonomy_matches = taxonomy_matches + "    }"
-      val json_rep_raw =
-        s"""
-                   |{
-                   | "header": {
-                   |   "timestamp": "${time_format.format(timestamp)}",
-                   |   "message_type": "event",
-                   |   "version": "0.1"
-                   | },
-                   | "msg": {
-                   |   "source": "DialogueActionExtractor",
-                   |   "experiment_id": "${experiment_id.toString}",
-                   |   "trial_id": "${trial_id.toString}",
-                   |   "timestamp": "${time_format.format(timestamp)}",
-                   |   "sub_type": "Event:dialogue_action",
-                   |   "version": "0.1"
-                   | },
-                   | "data": {
-                   |     "Label" : "${mention.label}",
-                   |     "Span" : "${mention.words.mkString(" ")}",
-                   |     "Arguments" : "${argument_labels.mkString(" ")}",
-                   |     "Text" : "${doc
-          .sentences(mention.sentence)
-          .getSentenceText}",
-                   |     "timestamp" : "${time_format.format(timestamp)}",
-                   |     "TaxonomyMatches" : ${taxonomy_matches}
-                   | }
-                   |}
-                   |"""
-      val json_rep = parse(json_rep_raw.stripMargin)
-      output_array.add(compact(render(json_rep)))
+      val taxonomy_matches = getTaxonomyMap(mention.label, tax_map)
+      val json =
+        (
+          ("header" ->
+            ("timestamp" -> time_string) ~
+            ("message_type" -> "event") ~
+            ("version" -> 0.1)) ~
+            ("msg" ->
+              ("source" -> "DialogueActionExtractor") ~
+              ("experiment_id" -> experiment_id.toString) ~
+              ("filename" -> file_name) ~
+              ("timestamp" -> time_string) ~
+              ("sub_type" -> "Event:dialogue_action") ~
+              ("version" -> "0.1")) ~
+            ("data" ->
+              ("Label" -> mention.label) ~
+              ("Span" -> mention.words.mkString(" ")) ~
+              ("Arguments" -> argument_labels.mkString(" ")) ~
+              ("Text" -> doc.sentences(mention.sentence).getSentenceText) ~
+              ("timestamp" -> time_string) ~
+              ("start_char" -> mention.startOffset) ~
+              ("end_char" -> mention.endOffset) ~
+              ("TaxonomyMatches" -> taxonomy_matches))
+        )
+      output_array.add(compact(render(json)))
     }
     output_array
   }

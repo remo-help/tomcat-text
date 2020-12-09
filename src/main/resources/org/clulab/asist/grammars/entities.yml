@@ -55,7 +55,7 @@ rules:
     label: Green
     priority: ${ rulepriority }
     type: token
-    keep: false
+    keep: true
     pattern: |
       [lemma=/(?i)^(green)/]
 
@@ -63,6 +63,6 @@ rules:
     label: Yellow
     priority: ${ rulepriority }
     type: token
-    keep: false
+    keep: true
     pattern: |
       [lemma=/(?i)^(yellow)/]

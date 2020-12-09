@@ -2,10 +2,11 @@ package org.clulab.asist
 
 import java.io.{File, PrintWriter}
 import java.util.Properties
-
 import edu.stanford.nlp.pipeline.StanfordCoreNLP
-import spray.json._
-import DefaultJsonProtocol._
+import org.clulab.asist.ExtractDirSearch.TaxonomyMap
+import org.json4s.DefaultFormats
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 import scala.collection.{immutable, mutable}
 import scala.io.Source
@@ -25,9 +26,9 @@ object ExtractInfoSearch extends App {
   println("[CoreNLP] Completed Initialization")
 
   val taxonomy_map_raw = Source.fromResource("taxonomy_map.json").mkString
-  val taxonomy_json = JsonParser(taxonomy_map_raw)
-  val tax_map = taxonomy_json
-    .convertTo[immutable.Map[String, Array[immutable.Map[String, String]]]]
+  val taxonomy_json = parse(taxonomy_map_raw)
+  implicit val formats = DefaultFormats
+  val tax_map = taxonomy_json.extract[TaxonomyMap]
 
   val input_file_name = if (args.length > 0) {
     args(0)
@@ -50,7 +51,7 @@ object ExtractInfoSearch extends App {
   val extractor = new Extractor(pipeline, ieSystem, tax_map)
   val output_file = new PrintWriter(new File("output_events.txt"))
   try {
-    val extracted_mention_json = extractor.extractMentions(input_file_name)
+    val extracted_mention_json = extractor.extractMentions(input_file_name, raw_file = true)
     for (event_json <- extracted_mention_json) {
       output_file.write(event_json + "\n")
     }
