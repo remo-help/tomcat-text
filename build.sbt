@@ -15,7 +15,7 @@ initialize := {
 
 //EclipseKeys.withSource := true
 
-resolvers += "Artifactory" at "https://artifactory.cs.arizona.edu:8081/artifactory/sbt-release"
+resolvers += "Artifactory" at "http://artifactory.cs.arizona.edu:8081/artifactory/sbt-release"
 
 libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5"
 libraryDependencies ++= {
