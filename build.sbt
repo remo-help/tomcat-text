@@ -9,13 +9,13 @@ javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 initialize := {
   val _ = initialize.value
   val javaVersion = sys.props("java.specification.version")
-  if (javaVersion != "1.8" && javaVersion.charAt(0) != "8")
+  if (javaVersion != "1.8" && javaVersion.charAt(0) != '8')
    sys.error("Java 1.8 is required for this project. Found " + javaVersion + " instead")
 }
 
 //EclipseKeys.withSource := true
 
-resolvers += "Artifactory" at "http://artifactory.cs.arizona.edu:8081/artifactory/sbt-release"
+resolvers += "Artifactory" at "https://artifactory.cs.arizona.edu:8081/artifactory/sbt-release"
 
 libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5"
 libraryDependencies ++= {

@@ -51,7 +51,7 @@ object ExtractInfoSearch extends App {
   val extractor = new Extractor(pipeline, ieSystem, tax_map)
   val output_file = new PrintWriter(new File("output_events.txt"))
   try {
-    val extracted_mention_json = extractor.extractMentions(input_file_name, raw_file = true)
+    val extracted_mention_json = extractor.extractMentions(input_file_name, raw_file = input_file_name.endsWith("txt"))
     for (event_json <- extracted_mention_json) {
       output_file.write(event_json + "\n")
     }
