@@ -163,9 +163,10 @@ class DialogAgentReprocessor (
         // Delete existing DialogAgent-generated VersionInfo
         finishIteration(rs)
       case _ => 
-        // Trascribe Unhandled cases
+        // Transcribe unhandled cases
         val rs1 = RSM.setOutputLine(rs, rs.inputLine)
-        finishIteration(rs1) 
+        val rs2 = RSM.setOutputTopic(rs, rs.inputTopic)
+        finishIteration(rs2) 
     }
   }
 
@@ -227,7 +228,6 @@ class DialogAgentReprocessor (
     rs: RunState
   ): Unit = parseJValue(rs.inputLine) match {
     case Some(metadataJValue: JValue) =>
-      val rs1 = RSM.setOutputTopic(rs, topicPubDialogAgent)
       reprocessDialogAgentMessage(rs, metadataJValue)
     case _ => reportProblem(rs, "Could not parse metadata")
   }
@@ -244,16 +244,17 @@ class DialogAgentReprocessor (
       case dataJObject: JObject => 
         val data = dataJObject.extract[DialogAgentMessageData]
         val newData = data.copy(extractions = getExtractions(data.text))
+        val rs1 = RSM.setOutputTopic(rs, topicPubDialogAgent)
         if(withClassifications) dacClient.foreach(
-          _.runClassification(rs, newData, metadataJValue)
+          _.runClassification(rs1, newData, metadataJValue)
         )
         else {
           val newMetadata = metadataJValue.replace(
             "data"::Nil,
             Extraction.decompose(newData)
           )
-          val rs1 = RSM.setOutputLine(rs, write(newMetadata))
-          finishIteration(rs1)
+          val rs2 = RSM.setOutputLine(rs1, write(newMetadata))
+          finishIteration(rs2)
         }
       case JNothing =>
         reprocessDialogAgentError(rs, metadataJValue)
@@ -334,10 +335,9 @@ class DialogAgentReprocessor (
           logger.error(s"Error writing to output file:  ${t}")
           RSM.addError(rs)
       }
-    case _ => 
-      logger.error("write called without a PrintWriter")
-      RSM.addError(rs)
+    case _ => rs // 
   }
+
 
   /** Nested iteration through files and their lines of metadata
    * @param rs: State of execution at current iteration
@@ -365,7 +365,8 @@ class DialogAgentReprocessor (
         val inputFileLines = fileInfo._2
         val outputFileName = ta3FileName(inputFileName)
         val lineIterator = LocalFileUtils.lineIterator(inputFileName)
-        val fileWriter = Some(new PrintWriter(new File(outputFileName)))
+        val fileWriter = if(outputFileName.startsWith("/dev/null/")) None
+          else Some(new PrintWriter(new File(outputFileName)))
 
         val advisory = if (inputFileLines == 1) 
           s"Reading 1 line from ${inputFileName}"
