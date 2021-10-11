@@ -60,4 +60,4 @@ rules:
     priority: ${ rulepriority }
     type: token
     pattern: |
-      [lemma=/(?i)\bplan\b|strategy/]
+      [lemma=/(?i)\bplan\b|strategy/ & tag=NN]
