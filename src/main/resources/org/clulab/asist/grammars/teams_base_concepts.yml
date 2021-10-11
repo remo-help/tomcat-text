@@ -1,3 +1,11 @@
 vars: org/clulab/asist/grammars/vars.yml
 
 rules:
+
+  - name: template_rule
+    priority: ${ rulepriority }
+    label: LABEL
+    type: token
+    keep: true
+    pattern: |
+      [pattern]
