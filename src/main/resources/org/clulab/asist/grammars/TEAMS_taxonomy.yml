@@ -68,6 +68,7 @@
                 - Communicate:
                     - Instruction
                     - ReportStatus:
+                        - DontKnow
                         - Stuck
                         - ReportLocation
                         - RoleDeclare
@@ -95,7 +96,8 @@
                             - MakeCommitment
                             - DeliberatePlan
                     - Agreement
-                    - Disagreement
+                    - Disagreement:
+                          - DisagreementShort
                 - Clear
                 - RoleSwitch
             - ComplexAction:

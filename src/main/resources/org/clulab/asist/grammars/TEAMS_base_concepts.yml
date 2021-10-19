@@ -9,3 +9,27 @@ rules:
     type: token
     pattern: |
       or|Or
+
+  - name: disagree_short
+    priority: ${ rulepriority }
+    label: DisagreementShort
+    keep: true
+    type: token
+    pattern: |
+      [word=/(?i)^no$|^nope$|^nah$|^negative$|^nope$/] (?! [] [] []+)
+
+  - name: disagree_short2
+    priority: ${ rulepriority }
+    label: DisagreementShort
+    keep: true
+    type: token
+    pattern: |
+      "No."
+
+  - name: dontknow
+    priority: ${ rulepriority }
+    label: DontKnow
+    keep: true
+    type: token
+    pattern: |
+      [lemma=I] [lemma=do] [lemma=not] [lemma=know] | dunno
