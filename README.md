@@ -1,5 +1,5 @@
 # tomcat-text
-*this is a fork*
+*the purpose of this fork is to create Dialog Act Labels for TEAMS corpus data*
 
 This repository contains natural language text processing code for the DARPA
 Artificial Social Intelligence for Successful Teams (ASIST) program. See the
