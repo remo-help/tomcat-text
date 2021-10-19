@@ -1,0 +1,10 @@
+vars: org/clulab/asist/grammars/vars.yml
+
+rules:
+  - name: OR_question_confident
+    example: "Where are they? Where is the victim?"
+    priority: ${ rulepriority }
+    label: ORQuestion
+    pattern: |
+      trigger = @YesNoQuestion
+      or: OR = >cc

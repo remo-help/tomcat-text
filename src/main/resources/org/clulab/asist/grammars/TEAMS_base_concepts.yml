@@ -1,0 +1,11 @@
+vars: org/clulab/asist/grammars/vars.yml
+
+rules:
+
+  - name: OR_detections
+    priority: ${ rulepriority }
+    label: OR
+    keep: true
+    type: token
+    pattern: |
+      or|Or
