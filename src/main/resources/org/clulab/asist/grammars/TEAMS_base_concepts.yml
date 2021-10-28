@@ -63,3 +63,19 @@ rules:
     type: token
     pattern: |
       (?<! [] []) [word=/(?i)what/] (?! [] []+)
+
+  - name: agreement_short
+    label: TEAMSAgreeShort
+    priority: ${ rulepriority }
+    type: token
+    keep: true
+    pattern: |
+      (?<! [] []) [word=/(?i)^all$/] [word=/(?i)^right$/] (?! [] []+) | (?<! [] []) [lemma=/(?i)^sound/] [word=/(?i)good/] (?! [] []+)
+
+  - name: agree_token_short
+    label: TEAMSAgreeShort
+    priority: ${ rulepriority }
+    type: token
+    keep: true
+    pattern: |
+      (?<! [] []) [lemma=/(?i)^(${ agree_triggers })$/] (?!no) (?! [] []+)

@@ -97,7 +97,8 @@
                         - Commitment:
                             - MakeCommitment
                             - DeliberatePlan
-                    - Agreement
+                    - Agreement:
+                          - TEAMSAgreeShort
                     - Disagreement:
                           - DisagreementShort
                 - Clear
