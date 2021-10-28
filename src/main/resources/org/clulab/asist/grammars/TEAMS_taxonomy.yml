@@ -67,7 +67,10 @@
                 - Sight
                 - Communicate:
                     - Instruction
+                    - TEAMS_Explanation
+                    - TEAMS_RepetitionRequest
                     - ReportStatus:
+                        - DontKnow
                         - Stuck
                         - ReportLocation
                         - RoleDeclare
@@ -94,8 +97,10 @@
                         - Commitment:
                             - MakeCommitment
                             - DeliberatePlan
-                    - Agreement
-                    - Disagreement
+                    - Agreement:
+                          - TEAMSAgreeShort
+                    - Disagreement:
+                          - DisagreementShort
                 - Clear
                 - RoleSwitch
             - ComplexAction:

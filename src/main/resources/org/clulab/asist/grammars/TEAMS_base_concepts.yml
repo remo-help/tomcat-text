@@ -9,3 +9,73 @@ rules:
     type: token
     pattern: |
       or|Or
+
+  - name: disagree_short
+    priority: ${ rulepriority }
+    label: DisagreementShort
+    keep: true
+    type: token
+    pattern: |
+      [word=/(?i)^no$|^nope$|^nah$|^negative$|^nope$/] (?! [] [] []+)
+
+  - name: disagree_short2
+    priority: ${ rulepriority }
+    label: DisagreementShort
+    keep: true
+    type: token
+    pattern: |
+      "No."
+
+  - name: dontknow
+    priority: ${ rulepriority }
+    label: DontKnow
+    keep: true
+    type: token
+    pattern: |
+      [lemma=I] [lemma=do] [lemma=not] [lemma=know] | dunno
+
+  - name: dontknow_2
+    priority: ${ rulepriority }
+    label: DontKnow
+    keep: true
+    type: token
+    pattern: |
+      [lemma=I] [lemma=can] [lemma=not] [lemma=say] | [lemma=not] [word=sure]
+
+  - name: repetition_request_1
+    priority: ${ rulepriority }
+    label: TEAMS_RepetitionRequest
+    type: token
+    pattern: |
+      [word=/(?i)excuse/] [word=me] | [word=/(?i)come/] [word=again] | [word=/(?i)can/] [word=you] [word=repeat]
+
+  - name: repetition_request_implicit
+    priority: ${ rulepriority }
+    label: TEAMS_RepetitionRequest
+    type: token
+    pattern: |
+      [word=/(?i)I/] [lemma=do] [lemma=not] [lemma=understand] | [word=/(?i)I/] [lemma=do] [lemma=not] [lemma=get] [word=it]
+
+  - name: repetition_request_what
+    priority: ${ rulepriority }
+    label: TEAMS_RepetitionRequest
+    keep: true
+    type: token
+    pattern: |
+      (?<! [] []) [word=/(?i)what/] (?! [] []+)
+
+  - name: agreement_short
+    label: TEAMSAgreeShort
+    priority: ${ rulepriority }
+    type: token
+    keep: true
+    pattern: |
+      (?<! [] []) [word=/(?i)^all$/] [word=/(?i)^right$/] (?! [] []+) | (?<! [] []) [lemma=/(?i)^sound/] [word=/(?i)good/] (?! [] []+)
+
+  - name: agree_token_short
+    label: TEAMSAgreeShort
+    priority: ${ rulepriority }
+    type: token
+    keep: true
+    pattern: |
+      (?<! [] []) [lemma=/(?i)^(${ agree_triggers })$/] (?!no) (?! [] []+)
