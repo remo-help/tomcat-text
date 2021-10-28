@@ -67,6 +67,8 @@
                 - Sight
                 - Communicate:
                     - Instruction
+                    - TEAMS_Explanation
+                    - TEAMS_RepetitionRequest
                     - ReportStatus:
                         - DontKnow
                         - Stuck

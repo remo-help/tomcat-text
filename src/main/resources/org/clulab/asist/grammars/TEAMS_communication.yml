@@ -8,3 +8,27 @@ rules:
     pattern: |
       trigger = @YesNoQuestion
       or: OR = >cc
+
+  - name: defend_explanation_strict
+    example: "Because if I get two I'd get six right, so I'd have to get rid of two."
+    priority: ${ rulepriority }
+    label: TEAMS_Explanation
+    pattern: |
+      trigger = [lemma=/(?i)because|cause/]
+      action: Action = >dep
+
+  - name: defend_explanation_sloppy
+    example: "Because if I get two I'd get six right, so I'd have to get rid of two."
+    priority: ${ rulepriority }
+    label: TEAMS_Explanation
+    type: token
+    pattern: |
+      [lemma=/(?i)because|beacuse|cause|coz/]
+
+  - name: question generic
+    example: "What are you talking about?"
+    priority: ${ rulepriority }
+    label: Question
+    pattern: |
+      trigger = @QuestionParticle (?= [lemma=be])
+      topic: Concept = >cop
