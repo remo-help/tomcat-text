@@ -87,6 +87,7 @@
                         - NeedAction
                         - HelpRequest
                     - Question:
+                        - HowQuestion
                         - QuestionParticle
                         - LocationQuestion
                         - YesNoQuestion
