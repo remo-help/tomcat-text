@@ -165,6 +165,15 @@ rules:
     pattern: |
       [lemma=/(?i)^(${ team_triggers })/ & tag=/PRP/]
 
+  - name: us_token_capture
+    label: Team
+    priority: ${ rulepriority }
+    type: token
+    keep: false
+    pattern: |
+      [lemma=/(?i)^us$/ & tag=/PRP/]
+  ## need this to avoid "none of us can move." triggering as question
+
   - name: them_token_capture
     label: Entity
     examples: "it, they, them"
