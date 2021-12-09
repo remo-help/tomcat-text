@@ -7,14 +7,16 @@ rules:
     label: ORQuestion
     pattern: |
       trigger = @YesNoQuestion
-      or: OR = >cc
+      or: OR =  >cc |
+              <aux  >cc|
+              <aux </conj_or/ >cc
 
   - name: defend_explanation_strict
     example: "Because if I get two I'd get six right, so I'd have to get rid of two."
     priority: ${ rulepriority }
     label: TEAMS_Explanation
     pattern: |
-      trigger = [lemma=/(?i)because|cause/]
+      trigger = [lemma=/(?i)because|cause/] (?! []* /[^\!\.]/ []* @QuestionMark) (?= []{2} []+)
       action: Action = >dep
 
   - name: defend_explanation_sloppy
@@ -23,7 +25,7 @@ rules:
     label: TEAMS_Explanation
     type: token
     pattern: |
-      [lemma=/(?i)because|beacuse|cause|coz/]
+      [lemma=/(?i)because|beacuse|cause|coz/]  (?! []* /[^\!\.]/ []* @QuestionMark) (?= []{2} []+)
 
   - name: question generic
     example: "What are you talking about?"

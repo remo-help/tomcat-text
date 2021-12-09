@@ -8,7 +8,24 @@ rules:
     keep: true
     type: token
     pattern: |
+      (?<= []{2}) or|(?<= []{2}) Or
+
+  - name: OR_detection_noquestion
+    priority: ${ rulepriority }
+    label: ORnoquestion
+    keep: true
+    type: token
+    pattern: |
       or|Or
+
+  - name: question_mark_token
+    example: "Can you see the victim?"
+    priority: ${ rulepriority }
+    type: token
+    label: QuestionMark
+    pattern: |
+      "?"
+
 
   - name: disagree_short
     priority: ${ rulepriority }
