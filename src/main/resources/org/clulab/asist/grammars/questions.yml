@@ -59,7 +59,7 @@ rules:
     priority: ${ rulepriority }
     label: HowQuestion
     pattern: |
-      trigger = [lemma=/^how$/] (?= [tag=/^V/])
+      trigger = [lemma=/^how$/] (?= [tag=/^V|MD/])
       topic: Action = <advmod
 
 

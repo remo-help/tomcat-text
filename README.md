@@ -5,6 +5,8 @@ This repository contains natural language text processing code for the DARPA
 Artificial Social Intelligence for Successful Teams (ASIST) program. See the
 main ToMCAT project page for more information: https://ml4ai.github.io/tomcat.
 
+For documentation on the entities and events being extracted by the master
+branch version of the code, please see https://clulab.github.io/tomcat-text.
 
 # Web App
 
@@ -191,7 +193,7 @@ message bus.
     "experiment_id": "367624f8-81cd-4661-a03f-b61908c39581",
     "trial_id": "78822ceb-448a-436e-a1f1-f154f2066261",
     "timestamp": "2021-10-07T18:27:42.843Z",
-    "source": "tomcat_textAnalyzer",
+    "source": "uaz_dialog_agent",
     "sub_type": "Event:dialogue_event",
     "version": "2.3.0",
     "replay_root_id": "",

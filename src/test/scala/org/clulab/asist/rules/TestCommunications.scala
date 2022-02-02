@@ -100,4 +100,57 @@ class TestCommunications extends BaseTest {
 
 
   }
+
+  passingTest should "parse instructions" in {
+    val text = "Come help me here!"
+    val mentions = extractor.extractFrom(text)
+    val action = DesiredMention("GenericAction", "help")
+    val inst = DesiredMention("Instruction", "Come help", Map("topic" -> Seq(action)))
+
+    testMention(mentions, inst)
+  }
+
+  passingTest should "parse instructions with a topic" in {
+    val text = "Help him save the victim!"
+    val mentions = extractor.extractFrom(text)
+    val victim = DesiredMention("Victim","victim")
+    val save = DesiredMention("Save", "save the victim", Map("target" -> Seq(victim)),Set(AGENT_OTHER))
+    val inst = DesiredMention("Instruction", "Help him save the victim", Map("topic" -> Seq(save)))
+
+    testMention(mentions, inst)
+  }
+
+
+  passingTest should "parse simple help request" in {
+    val text = "I need help."
+    val mentions = extractor.extractFrom(text)
+    val helpReq = DesiredMention("HelpRequest", "need help",Map.empty,Set(AGENT_SELF))
+
+    testMention(mentions, helpReq)
+  }
+
+  passingTest should "parse complex help request" in {
+    val text = "Can you help me here?"
+    val mentions = extractor.extractFrom(text)
+    val helpReq = DesiredMention("HelpRequest", "you help me here",
+      Map("helper" -> Seq(DesiredMention("You", "you")),
+        "location" -> Seq(DesiredMention("Deictic", "here"))
+      ),
+      Set(AGENT_SELF))
+
+    testMention(mentions, helpReq)
+  }
+
+  passingTest should "parse tool broken" in {
+    val text = "The hammer is broken."
+    val mentions = extractor.extractFrom(text)
+    val toolBroken = DesiredMention("ToolBroken", "hammer is broken",
+      Map("tool" -> Seq(DesiredMention("Hammer", "hammer"))))
+
+    testMention(mentions, toolBroken)
+  }
+
+
+
+
 }

@@ -1,23 +1,22 @@
 package org.clulab.asist.agents
 
 import com.typesafe.scalalogging.LazyLogging
+import org.clulab.asist.messages.BusMessage
 
 /**
- * Authors:  Joseph Astier, Adarsh Pyarelal, Rebecca Sharp
+ * Authors:  Joseph Astier, Adarsh Pyarelal
  *
- * Extenders of this class can use the TAMU Dialog Act Classifier (TDAC)
- * client variable state (Some, or None) to know if the TDAC is in use.  
  *
+ * @param tdacUrl TDAC server network location if set.
  */
 
 abstract class TdacAgent (
-  val urlMaybe: Option[String] = None
+  val tdacUrl: Option[String] = None
 ) extends DialogAgent with LazyLogging {
   
   // Dialog Act Classification.  No instantiation if not used.
-  val tdacClient: Option[TdacClient] = urlMaybe match {
+  val tdacClient: Option[TdacClient] = tdacUrl match {
     case Some(url) =>
-      logger.info(s"TDAC server URL: ${url}")
       Some (new TdacClient(this, url))
     case None =>
       logger.info("TDAC not enabled")
@@ -27,18 +26,10 @@ abstract class TdacAgent (
   def tdacInit: Unit = tdacClient.foreach(_.initServer)
 
   /** Write the runstate output to the output for the extending class
-   * @param rs The current execution state of the agent
-   * @return The execution state of the agent after writing the output
+   * @param messages output for the message bus
    */
-  def writeOutput(rs: RunState): RunState
+  def writeOutput(messages: List[BusMessage]): Unit 
 
-  /** Do the next thing in the processing queue.
-   * @param rs The current execution state of the agent
-   */
-  def iteration(rs: RunState): Unit
-
-  /** Take appropriate action if the tdacClient reports an exception.
-   * @param rs The current execution state of the agent
-   */
-  def handleError(rs: RunState): Unit
+  /** process the next message in the job queue. */
+  def doNextJob(): Unit
 }

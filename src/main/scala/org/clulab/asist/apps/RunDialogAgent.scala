@@ -21,14 +21,13 @@ import scala.annotation.tailrec
  */
 
 object RunDialogAgent extends App {
-
   
   // splash page if args are not understood
   val usageText = List(
     "",
     "usage:",
     "",
-    "  mqtt <host> <port> [--tdac <host> <port>]",
+    "  mqtt <host> <port> [--tdac <host> <port>] [--idc]",
     "  stdin",
     "  file <inputfile> <outputfile>",
     "  reprocess <inputdir> <outputdir> [-v ta3_version_number] [--tdac <host> <port>]}",
@@ -41,11 +40,9 @@ object RunDialogAgent extends App {
     "inputdir   : A directory of .metadata files to be reprocessed by the DialogAgent",
     "outputdir  : A directory where reprocessed .metadata files will be saved.",
     "--tdac     : Internet address of the TAMU dialogue act classifier.",
+    "--idc      : Enable parallel processing of message interdependcies",
     ""
   )
-
-  // a dialog agent kept in global scope
-  val agent = run(args.toList)
 
   /** Find the TA3 Version number arg in the arg list
    * @param argList A flat list of keys and values
@@ -78,24 +75,32 @@ object RunDialogAgent extends App {
       None
   }
 
-  /** Run the Dialog Agent per user args.
+  /** Find the IDC flag in the arg list
+   * @param argList A flat list of keys and values
+   * @return true if the list contains the string "--idc"
+   */
+  def idcActive(arglist: List[String]): Boolean = arglist.contains("--idc")
+
+  /** Create a Dialog Agent per user args.
    * @param argList A flat list of running mode then n key-value pairs
    * @return A DialogAgent running in the mode with the args
    */
-  def run(argList: List[String]): Option[DialogAgent] = argList match {
+  args.toList match {
     case ("mqtt"::host::port::l) => 
       val tdac = tdacUrl(l)
-      Some(new DialogAgentMqtt(host, port, tdac))
+      val idc = idcActive(l)
+      new DialogAgentMqtt(host, port, tdac, idc)
     case ("file"::infile::outfile::l) =>
-      Some(new DialogAgentFile(infile, outfile))
+      val tdac = tdacUrl(l)
+      val idc = idcActive(l)
+      new DialogAgentFile(infile, outfile, tdac, idc)
     case ("stdin"::l) =>
-      Some(new DialogAgentStdin)
+      new DialogAgentStdin
     case ("reprocess"::indir::outdir::l) =>
       val ta3  = ta3Version(l)
       val tdac = tdacUrl(l)
-      Some(new DialogAgentReprocessor(indir, outdir, ta3, tdac))
+      new DialogAgentReprocessor(indir, outdir, ta3, tdac)
     case _ =>
       usageText.foreach(println)
-      None
   }
 }
